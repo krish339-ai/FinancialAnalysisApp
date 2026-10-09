@@ -1,0 +1,251 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+  CREDIT_CARD
+  MORTGAGE
+  AUTO_LOAN
+  SOLAR_LOAN
+  PERSONAL_LOAN
+  OTHER_LOAN
+  MANUAL_ASSET
+}
+
+enum TransactionKind {
+  INCOME
+  EXPENSE
+  REFUND
+  TRANSFER
+  CARD_PAYMENT
+  LOAN_PRINCIPAL
+  LOAN_PROCEEDS
+}
+
+enum Direction {
+  DEBIT
+  CREDIT
+}
+
+enum RecordStatus {
+  POSTED
+  PENDING
+}
+
+enum RecordSource {
+  SYNTHETIC
+  MANUAL
+  CSV
+  PROVIDER
+}
+
+model User {
+  id              String          @id @default(cuid())
+  externalSubject String          @unique
+  displayName     String
+  memberships     Membership[]
+  preferences     UserPreference?
+  createdAt       DateTime        @default(now())
+}
+
+model Workspace {
+  id          String                  @id @default(cuid())
+  name        String
+  isDemo      Boolean                 @default(false)
+  memberships Membership[]
+  accounts    Account[]
+  categories  Category[]
+  imports     ImportBatch[]
+  connections IntegrationConnection[]
+  createdAt   DateTime                @default(now())
+}
+
+model Membership {
+  userId      String
+  workspaceId String
+  role        String    @default("OWNER")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@id([userId, workspaceId])
+}
+
+model Institution {
+  id       String    @id @default(cuid())
+  name     String
+  accounts Account[]
+}
+
+model Account {
+  id             String                 @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace              @relation(fields: [workspaceId], references: [id])
+  institutionId  String?
+  institution    Institution?           @relation(fields: [institutionId], references: [id])
+  name           String
+  type           AccountType
+  currency       String                 @db.Char(3)
+  openingBalance BigInt
+  openingDate    DateTime               @db.Date
+  mask           String?
+  archivedAt     DateTime?
+  creditLimit    BigInt?
+  relatedAssetId String?
+  relatedAsset   Account?               @relation("LoanAsset", fields: [relatedAssetId, workspaceId], references: [id, workspaceId])
+  linkedLoans    Account[]              @relation("LoanAsset")
+  externalId     String?
+  connectionId   String?
+  connection     IntegrationConnection? @relation(fields: [connectionId, workspaceId], references: [id, workspaceId])
+  snapshots      BalanceSnapshot[]
+  transactions   Transaction[]
+  instruments    PaymentInstrument[]
+  loan           LoanDetails?
+
+  @@unique([id, workspaceId])
+  @@unique([connectionId, externalId])
+  @@index([workspaceId, archivedAt])
+}
+
+model LoanDetails {
+  accountId             String    @id
+  account               Account   @relation(fields: [accountId], references: [id])
+  originalPrincipal     BigInt
+  annualRateBasisPoints Int
+  termMonths            Int
+  startDate             DateTime  @db.Date
+  maturityDate          DateTime? @db.Date
+  regularPayment        BigInt
+}
+
+model PaymentInstrument {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id])
+  kind      String
+  label     String
+  mask      String
+}
+
+model BalanceSnapshot {
+  id         String       @id @default(cuid())
+  accountId  String
+  account    Account      @relation(fields: [accountId], references: [id])
+  date       DateTime     @db.Date
+  balance    BigInt
+  currency   String       @db.Char(3)
+  source     RecordSource
+  observedAt DateTime     @default(now())
+
+  @@unique([accountId, date])
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id])
+  name         String
+  transactions Transaction[]
+
+  @@unique([id, workspaceId])
+  @@unique([workspaceId, name])
+}
+
+model Transaction {
+  id            String                @id @default(cuid())
+  workspaceId   String
+  accountId     String
+  account       Account               @relation(fields: [accountId, workspaceId], references: [id, workspaceId])
+  categoryId    String?
+  category      Category?             @relation(fields: [categoryId, workspaceId], references: [id, workspaceId])
+  date          DateTime              @db.Date
+  description   String
+  amount        BigInt
+  currency      String                @db.Char(3)
+  direction     Direction
+  kind          TransactionKind
+  status        RecordStatus          @default(POSTED)
+  source        RecordSource
+  recurring     Boolean               @default(false)
+  externalId    String?
+  fingerprint   String?
+  importBatchId String?
+  importBatch   ImportBatch?          @relation(fields: [importBatchId, workspaceId], references: [id, workspaceId])
+  transferFrom  TransferRelationship? @relation("FromTransaction")
+  transferTo    TransferRelationship? @relation("ToTransaction")
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@unique([id, workspaceId])
+  @@unique([workspaceId, fingerprint])
+  @@unique([accountId, externalId])
+  @@index([workspaceId, date])
+}
+
+model TransferRelationship {
+  id          String      @id @default(cuid())
+  workspaceId String
+  fromId      String      @unique
+  toId        String      @unique
+  from        Transaction @relation("FromTransaction", fields: [fromId, workspaceId], references: [id, workspaceId])
+  to          Transaction @relation("ToTransaction", fields: [toId, workspaceId], references: [id, workspaceId])
+
+  @@unique([fromId, workspaceId])
+  @@unique([toId, workspaceId])
+}
+
+model ImportBatch {
+  id           String        @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id])
+  fileName     String
+  fileHash     String
+  status       String
+  createdAt    DateTime      @default(now())
+  rows         ImportRow[]
+  transactions Transaction[]
+
+  @@unique([id, workspaceId])
+  @@unique([workspaceId, fileHash])
+}
+
+model ImportRow {
+  id         String      @id @default(cuid())
+  batchId    String
+  batch      ImportBatch @relation(fields: [batchId], references: [id])
+  rowNumber  Int
+  status     String
+  errors     Json?
+  normalized Json?
+
+  @@unique([batchId, rowNumber])
+}
+
+model UserPreference {
+  userId   String @id
+  user     User   @relation(fields: [userId], references: [id])
+  timezone String @default("America/New_York")
+  currency String @default("USD") @db.Char(3)
+}
+
+model IntegrationConnection {
+  id                   String    @id @default(cuid())
+  workspaceId          String
+  workspace            Workspace @relation(fields: [workspaceId], references: [id])
+  provider             String
+  externalConnectionId String
+  secretReference      String?
+  status               String
+  lastSyncedAt         DateTime?
+  consentRevokedAt     DateTime?
+  accounts             Account[]
+
+  @@unique([id, workspaceId])
+  @@unique([workspaceId, provider, externalConnectionId])
+}

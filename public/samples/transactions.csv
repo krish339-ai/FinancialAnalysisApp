@@ -1,0 +1,5 @@
+date,description,amount,direction,kind,currency,category
+2026-10-01,Example employer payroll,4250.00,CREDIT,INCOME,USD,Salary
+2026-10-02,Example market,83.42,DEBIT,EXPENSE,USD,Groceries
+2026-10-03,Transfer to savings,500.00,DEBIT,TRANSFER,USD,Internal transfer
+2026-10-04,Card payment,200.00,DEBIT,CARD_PAYMENT,USD,Card payment
