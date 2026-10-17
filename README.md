@@ -29,13 +29,18 @@ pnpm build
 pnpm start
 ```
 
+If the Windows runtime cannot start Turbopack’s CSS worker, the alternative build is `pnpm db:generate` followed by `pnpm exec next build --webpack`. It uses the same `pnpm start` command.
+
 ## What works now
 
-- Responsive dashboard with net worth, income, expenses, and recent debit/credit activity.
-- Six reporting windows and interactive charts derived from recorded synthetic data.
+- A cinematic landing page at `/` with a custom animated canvas sculpture, three interactive financial perspectives, and a real demo-data preview. The dashboard is at `/dashboard`; existing `/?range=...` bookmarks redirect to it. The artwork supports pause, pointer interaction, reduced motion, and suspension while off screen.
+
+- A unified Obsidian workspace with sage and ivory colors, editorial typography, generative page artwork, softly animated charts and cards, and responsive layouts across all seven application pages.
+- Searchable command menu (Ctrl/Cmd K) with keyboard navigation; an accessible mobile drawer and a thumb-friendly navigation dock.
+- Six reporting windows and smoothly animated charts derived from recorded synthetic data, with reduced-motion support.
 - Net worth, income, and expense detail pages with supporting account records.
-- Transaction search, sorting, date/account/category/type/status/amount filters, detail dialogs, and filtered CSV export.
-- Six reference accounts, account details, and account-level activity.
+- Transaction search, sorting, date/account/category/type/status/amount filters, sliding detail panels, and filtered CSV export.
+- Six reference accounts and account-level activity. Account and transaction details open in a side panel on desktop or a bottom sheet on phones.
 - Accessible multi-step Add Account preview, isolated in browser session storage. Preview accounts are explicitly excluded from reference analytics.
 - Settings with calculation methodology, sample CSV download, and session reset.
 - Money/date/classification/import domain functions, PostgreSQL schema/migration/seed, and future integration contract.
