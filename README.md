@@ -33,7 +33,9 @@ If the Windows runtime cannot start Turbopack’s CSS worker, the alternative bu
 
 ## What works now
 
-- A cinematic landing page at `/` with a custom animated canvas sculpture, three interactive financial perspectives, and a real demo-data preview. The dashboard is at `/dashboard`; existing `/?range=...` bookmarks redirect to it. The artwork supports pause, pointer interaction, reduced motion, and suspension while off screen.
+- A cinematic landing page at `/` with meaningful sculptural perspectives for net worth, income, and surplus. Living weave is the default; users can switch to Orbital field. Perspective buttons sit beneath the larger artwork and show their corresponding amounts together in the initial view on laptops and phones. Conceptual motion explains each selection without replacing the hero with a chart. Amounts use the same 30-day demo window as the dashboard and link to the corresponding reports. Animations are finite, replayable, and respect reduced motion.
+- Independent Obsidian dark and Porcelain & Ink light appearances cover the landing page, every workspace route, charts, command menu, and sliding panels. The sun/moon button in the header switches themes; Settings includes named theme choices and the artwork selector. Both preferences are remembered on the device, with an in-memory fallback when browser storage is unavailable.
+- The dashboard is at `/dashboard`; existing `/?range=...` bookmarks redirect to it.
 
 - A unified Obsidian workspace with sage and ivory colors, editorial typography, generative page artwork, softly animated charts and cards, and responsive layouts across all seven application pages.
 - Searchable command menu (Ctrl/Cmd K) with keyboard navigation; an accessible mobile drawer and a thumb-friendly navigation dock.

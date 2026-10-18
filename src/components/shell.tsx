@@ -6,6 +6,7 @@ import { useState, type ReactNode } from 'react';
 import { AddAccount } from './add-account';
 import { CommandMenu } from './command-menu';
 import { DemoProvider } from './demo-context';
+import { AppearanceToggle } from './appearance-context';
 import { Dialog, DialogContent, DialogTrigger } from './ui/dialog';
 
 const links = [
@@ -46,7 +47,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="main-shell"><header className="topbar"><div className="breadcrumb">
       <Dialog open={menu} onOpenChange={setMenu}><DialogTrigger asChild><button className="mobile-menu icon-button" aria-label="Open navigation"><Menu size={21} /></button></DialogTrigger><DialogContent variant="navigation" title="Main navigation" description="Navigate your Aureli workspace."><Navigation pathname={pathname} mobile onNavigate={() => setMenu(false)} /></DialogContent></Dialog>
       <span className="breadcrumb-workspace">Workspace</span><ChevronRight className="breadcrumb-chevron" size={13} /><strong>{title}</strong>
-    </div><div className="topbar-right"><CommandMenu /><Link href="/settings" className="demo-badge"><span /> Demo</Link><Link href="/settings" className="avatar small-avatar" aria-label="Profile and settings">JD</Link></div></header>
+    </div><div className="topbar-right"><AppearanceToggle /><CommandMenu /><Link href="/settings" className="demo-badge"><span /> Demo</Link><Link href="/settings" className="avatar small-avatar" aria-label="Profile and settings">JD</Link></div></header>
       <main id="main-content"><div className="workspace-page" key={pathname}>{children}</div></main>
       <footer className="footer"><span><ShieldCheck size={13} /> Synthetic data. Real perspective.</span><span>USD · America/New_York</span></footer>
       <MobileDock pathname={pathname} />

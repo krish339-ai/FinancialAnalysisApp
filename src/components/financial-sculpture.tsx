@@ -1,21 +1,23 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useAppearance } from './appearance-context';
 
 type Point = { x: number; y: number; z: number };
 
 /** A projected, woven surface. This is expressive artwork, not a financial chart. */
 export function FinancialSculpture({ mode, paused }: { mode: number; paused: boolean }) {
+  const { theme } = useAppearance();
   const canvas = useRef<HTMLCanvasElement>(null);
-  const controls = useRef({ mode, paused });
-  useEffect(() => { controls.current = { mode, paused }; }, [mode, paused]);
+  const controls = useRef({ mode, paused, light: theme === 'ivory' });
+  useEffect(() => { controls.current = { mode, paused, light: theme === 'ivory' }; }, [mode, paused, theme]);
 
   useEffect(() => {
     const element = canvas.current;
     const context = element?.getContext('2d');
     if (!element || !context) return;
     let width = 0, height = 0, frame = 0, last = 0, time = 0, currentMode = controls.current.mode;
-    let inView = true, visible = !document.hidden;
+    let inView = true, visible = !document.hidden, renderedLight = controls.current.light;
     let pointerX = 0, pointerY = 0, targetX = 0, targetY = 0;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let reduced = motion.matches;
@@ -33,11 +35,12 @@ export function FinancialSculpture({ mode, paused }: { mode: number; paused: boo
 
     function draw() {
       if (!context) return;
+      const lightTheme = controls.current.light; renderedLight = lightTheme;
       context.clearRect(0, 0, width, height);
       const glow = context.createRadialGradient(width * .51, height * .48, 10, width * .51, height * .48, width * .43);
-      glow.addColorStop(0, 'rgba(94, 146, 83, .085)');
-      glow.addColorStop(.65, 'rgba(59, 100, 62, .035)');
-      glow.addColorStop(1, 'rgba(59, 100, 62, 0)');
+      glow.addColorStop(0, lightTheme ? 'rgba(95, 143, 194, .085)' : 'rgba(94, 146, 83, .085)');
+      glow.addColorStop(.65, lightTheme ? 'rgba(67, 104, 150, .035)' : 'rgba(59, 100, 62, .035)');
+      glow.addColorStop(1, lightTheme ? 'rgba(67, 104, 150, 0)' : 'rgba(59, 100, 62, 0)');
       context.fillStyle = glow;
       context.fillRect(0, 0, width, height);
 
@@ -71,14 +74,14 @@ export function FinancialSculpture({ mode, paused }: { mode: number; paused: boo
       context.lineJoin = 'round';
       for (const line of lines) {
         const light = line.light;
-        context.strokeStyle = `rgba(${Math.round(94 + 121 * light)}, ${Math.round(133 + 99 * light)}, ${Math.round(79 + 95 * light)}, ${.2 + light * .5})`;
+        context.strokeStyle = lightTheme ? `rgba(${Math.round(43 + 34 * light)}, ${Math.round(71 + 42 * light)}, ${Math.round(112 + 45 * light)}, ${.3 + light * .5})` : `rgba(${Math.round(94 + 121 * light)}, ${Math.round(133 + 99 * light)}, ${Math.round(79 + 95 * light)}, ${.2 + light * .5})`;
         context.lineWidth = .55 + light * .55;
         context.beginPath();
         line.points.forEach((point, index) => index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y));
         context.stroke();
       }
       // Sparse cross fibers give the continuous form a woven, dimensional surface.
-      context.strokeStyle = 'rgba(177, 209, 151, .12)';
+      context.strokeStyle = lightTheme ? 'rgba(63, 102, 152, .18)' : 'rgba(177, 209, 151, .12)';
       context.lineWidth = .6;
       for (let sample = 0; sample < samples; sample += 5) {
         context.beginPath();
@@ -105,7 +108,7 @@ export function FinancialSculpture({ mode, paused }: { mode: number; paused: boo
         currentMode += (controls.current.mode - currentMode) * (reduced ? 1 : .07);
         pointerX += ((moving ? targetX : 0) - pointerX) * .05;
         pointerY += ((moving ? targetY : 0) - pointerY) * .05;
-        if (moving || changing) draw();
+        if (moving || changing || renderedLight !== controls.current.light) draw();
         else if (currentMode !== controls.current.mode) { currentMode = controls.current.mode; draw(); }
       }
       frame = requestAnimationFrame(animate);
