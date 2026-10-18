@@ -31,6 +31,16 @@ pnpm start
 
 If the Windows runtime cannot start Turbopack’s CSS worker, the alternative build is `pnpm db:generate` followed by `pnpm exec next build --webpack`. It uses the same `pnpm start` command.
 
+## Public demo
+
+[Aureli live demo](https://aureli.shadyemu2.chatgpt.site) is published through Sites with public access and synthetic financial data.
+
+The Sites source is a separate Vinext checkout at `artifacts/aureli-site`, backed by the Sites source repository. Its `.openai/hosting.json` owns project `appgprj_6ad43d83734c8191b7af8811f1ac606c`; reuse this identity for updates. The main repository continues to run the original Next.js app on port 3000. The hosting copy includes `src/components/site-link.tsx`, a compatibility adapter for Vinext beta's bundled link navigation; preserve it when syncing UI changes. The public demo does not require a database or environment secrets.
+
+The `artifacts` directory is intentionally excluded from this GitHub repository. On another computer, clone this repository for the main app and restore the existing Sites source through the Sites workflow using the project ID above. The published source commit is `a76ca65c4ef63393e8aacca925bdd38d74e99286`.
+
+All 22 desktop and mobile browser tests passed against the hosting copy's production preview before publication. Publish subsequent versions with the Sites workflow, preserving public access.
+
 ## What works now
 
 - A cinematic landing page at `/` with meaningful sculptural perspectives for net worth, income, and surplus. Living weave is the default; users can switch to Orbital field. Perspective buttons sit beneath the larger artwork and show their corresponding amounts together in the initial view on laptops and phones. Conceptual motion explains each selection without replacing the hero with a chart. Amounts use the same 30-day demo window as the dashboard and link to the corresponding reports. Animations are finite, replayable, and respect reduced motion.
